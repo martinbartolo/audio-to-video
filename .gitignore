@@ -1,0 +1,25 @@
+# Generated output
+output.mp4
+*.mp4
+
+# Source media (don't commit large binaries)
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.aac
+*.ogg
+
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+.claude/
