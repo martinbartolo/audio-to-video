@@ -112,13 +112,6 @@ You still need Git Bash or WSL to run the `.sh` script.
 | `--resolution <WxH>`  | Output resolution (default: `1280x720`)                                          |
 | `--bg-color <color>`  | Letterbox color: named (`black`, `white`) or hex (`0xff0000`) (default: `black`) |
 | `-h, --help`          | Show usage                                                                       |
-| `-i, --image <file>`  | Input image file (auto-detected if omitted)                                      |
-| `-a, --audio <file>`  | Input audio file (auto-detected if omitted)                                      |
-| `-o, --output <file>` | Output video file (default: `output.mp4`)                                        |
-| `--fps <n>`           | Frames per second (default: `1`)                                                 |
-| `--resolution <WxH>`  | Output resolution (default: `1280x720`)                                          |
-| `--bg-color <color>`  | Letterbox color: named (`black`, `white`) or hex (`0xff0000`) (default: `black`) |
-| `-h, --help`          | Show usage                                                                       |
 
 ### Examples
 
