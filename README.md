@@ -160,7 +160,7 @@ So if you only have one image and one audio file in the folder, naming doesn't m
 - **Resolution:** `1280x720` by default (override with `--resolution`), letterboxed to preserve the source image's aspect ratio
 - **Frame rate:** `1` fps by default (override with `--fps`)
 - **Video codec:** H.264 (`libx264`, `yuv420p`)
-- **Audio codec:** AAC, 128 kbps, 44.1 kHz stereo
+- **Audio codec:** AAC, 320 kbps, 48 kHz stereo
 - **Container:** MP4 with `faststart` enabled for streaming
 
 ---

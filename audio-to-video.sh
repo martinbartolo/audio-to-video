@@ -138,7 +138,7 @@ ffmpeg -y -hide_banner -loglevel error \
     -c:v libx264 -preset ultrafast -tune stillimage -crf 23 \
     -r "$FPS" -pix_fmt yuv420p \
     -g 30 -keyint_min 15 \
-    -c:a aac -b:a 128k -ar 44100 -ac 2 \
+    -c:a aac -b:a 320k -ar 48000 -ac 2 \
     -shortest -movflags +faststart \
     "$OUTPUT_FILE"
 
