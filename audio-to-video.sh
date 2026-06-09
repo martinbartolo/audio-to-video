@@ -27,7 +27,12 @@ Options:
   -o, --output <file>     Output video file (default: output.mp4)
   --fps <n>               Frames per second (default: 1)
   --resolution <WxH>      Output resolution (default: 1280x720)
-  --bg-color <color>      Letterbox color, e.g. black, white, 0xff0000 (default: black)
+  --fit <mode>            How the image fills the frame (default: contain)
+                            contain  Fit inside, preserve aspect ratio, pad with --bg-color
+                            cover    Fill the frame, preserve aspect ratio, crop overflow
+                            stretch  Fill the frame exactly, may distort the image
+  --bg-color <color>      Letterbox color for --fit contain
+                          e.g. black, white, 0xff0000 (default: black)
   -h, --help              Show this help message
 
 Examples:
@@ -35,6 +40,7 @@ Examples:
   $(basename "$0") -i cover.png -a beat.mp3
   $(basename "$0") -i artwork.jpg -a track.wav -o my-video.mp4
   $(basename "$0") --resolution 1920x1080 --fps 30 --bg-color white
+  $(basename "$0") --fit cover
 EOF
 }
 
@@ -85,6 +91,7 @@ OUTPUT_FILE="output.mp4"
 FPS="1"
 RESOLUTION="1280x720"
 BG_COLOR="black"
+FIT_MODE="contain"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -94,16 +101,24 @@ while [[ $# -gt 0 ]]; do
         --fps) FPS="$2"; shift 2 ;;
         --resolution) RESOLUTION="$2"; shift 2 ;;
         --bg-color) BG_COLOR="$2"; shift 2 ;;
+        --fit) FIT_MODE="$2"; shift 2 ;;
         -h|--help) print_usage; exit 0 ;;
         *) error "Unknown option: $1. Use --help for usage." ;;
     esac
 done
 
-# Validate and parse resolution / fps
+# Validate and parse resolution / fps / fit
 [[ "$RESOLUTION" =~ ^[0-9]+x[0-9]+$ ]] || error "Invalid resolution: $RESOLUTION (expected WxH, e.g. 1280x720)"
 VIDEO_WIDTH="${RESOLUTION%x*}"
 VIDEO_HEIGHT="${RESOLUTION#*x}"
 [[ "$FPS" =~ ^[0-9]+$ && "$FPS" -gt 0 ]] || error "Invalid fps: $FPS (expected positive integer)"
+
+case "$FIT_MODE" in
+    contain) VIDEO_FILTER="scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:force_original_aspect_ratio=decrease,pad=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:${BG_COLOR}" ;;
+    cover)   VIDEO_FILTER="scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:force_original_aspect_ratio=increase,crop=${VIDEO_WIDTH}:${VIDEO_HEIGHT}" ;;
+    stretch) VIDEO_FILTER="scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}" ;;
+    *) error "Invalid fit mode: $FIT_MODE (expected contain, cover, or stretch)" ;;
+esac
 
 # Auto-detect files if not specified
 [[ -z "$IMAGE_FILE" ]] && IMAGE_FILE=$(detect_image)
@@ -134,7 +149,7 @@ ffmpeg -y -hide_banner -loglevel error \
     -loop 1 -i "$IMAGE_FILE" \
     -i "$AUDIO_FILE" \
     -map 0:v -map 1:a \
-    -vf "scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:force_original_aspect_ratio=decrease,pad=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:${BG_COLOR}" \
+    -vf "$VIDEO_FILTER" \
     -c:v libx264 -preset ultrafast -tune stillimage -crf 23 \
     -r "$FPS" -pix_fmt yuv420p \
     -g 30 -keyint_min 15 \

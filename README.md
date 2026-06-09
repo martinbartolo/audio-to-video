@@ -103,15 +103,28 @@ You still need Git Bash or WSL to run the `.sh` script.
 ./audio-to-video.sh [options]
 ```
 
-| Flag                  | Description                                                                      |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `-i, --image <file>`  | Input image file (auto-detected if omitted)                                      |
-| `-a, --audio <file>`  | Input audio file (auto-detected if omitted)                                      |
-| `-o, --output <file>` | Output video file (default: `output.mp4`)                                        |
-| `--fps <n>`           | Frames per second (default: `1`)                                                 |
-| `--resolution <WxH>`  | Output resolution (default: `1280x720`)                                          |
-| `--bg-color <color>`  | Letterbox color: named (`black`, `white`) or hex (`0xff0000`) (default: `black`) |
-| `-h, --help`          | Show usage                                                                       |
+| Flag                  | Description                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `-i, --image <file>`  | Input image file (auto-detected if omitted)                                                |
+| `-a, --audio <file>`  | Input audio file (auto-detected if omitted)                                                |
+| `-o, --output <file>` | Output video file (default: `output.mp4`)                                                  |
+| `--fps <n>`           | Frames per second (default: `1`)                                                           |
+| `--resolution <WxH>`  | Output resolution (default: `1280x720`)                                                    |
+| `--fit <mode>`        | How the image fills the frame: `contain`, `cover`, or `stretch` (default: `contain`)       |
+| `--bg-color <color>`  | Letterbox color for `--fit contain`: named (`black`, `white`) or hex (`0xff0000`) (default: `black`) |
+| `-h, --help`          | Show usage                                                                                 |
+
+### Fit modes
+
+`--fit` controls what happens when the image's aspect ratio doesn't match the output resolution.
+
+| Mode      | Behavior                                                                       | Tradeoff                                            |
+| --------- | ------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `contain` | Scale the image to fit inside the frame, pad the rest with `--bg-color`        | No cropping or distortion, but adds letterbox bars  |
+| `cover`   | Scale the image until it fills the frame, crop whatever spills past the edges  | No bars, no distortion, but the edges get cut off   |
+| `stretch` | Scale the image to the exact output dimensions                                 | No bars, no cropping, but distorts the image        |
+
+If your image is already the same aspect ratio as `--resolution`, all three modes produce identical output.
 
 ### Examples
 
@@ -127,6 +140,9 @@ You still need Git Bash or WSL to run the `.sh` script.
 
 # 1080p at 30 fps with a white letterbox
 ./audio-to-video.sh --resolution 1920x1080 --fps 30 --bg-color white
+
+# Fill the entire frame, cropping the image's edges instead of adding bars
+./audio-to-video.sh --fit cover
 ```
 
 ### Why these defaults?
@@ -135,7 +151,8 @@ The defaults are tuned for the most common use case: **uploading to YouTube**, w
 
 - **`--fps 1`** — YouTube re-encodes uploads, so source fps doesn't affect viewer experience. A 1 fps source produces a file that's a fraction of the size and encodes far faster. If you plan to use the output elsewhere (local playback, social platforms that don't re-encode), bump to `--fps 24` or `--fps 30` for compatibility.
 - **`--resolution 1280x720`** — 720p is YouTube's minimum HD tier and a static image gets no real benefit from 1080p. Override with `--resolution 1920x1080` if you'd rather upload at 1080p.
-- **`--bg-color black`** — Standard letterbox. Set this to match your image's background if you'd rather not see bars.
+- **`--bg-color black`** — Standard letterbox. Set this to match your image's background, or use `--fit cover` / `--fit stretch` to avoid bars entirely.
+- **`--fit contain`** — Preserves the source image as-is, with bars filling any leftover space. Switch to `cover` if you want the image to fill the frame and don't mind cropping, or `stretch` if you want it filled and don't mind distortion.
 
 ### Auto-detection
 
@@ -157,7 +174,7 @@ So if you only have one image and one audio file in the folder, naming doesn't m
 
 ## Output
 
-- **Resolution:** `1280x720` by default (override with `--resolution`), letterboxed to preserve the source image's aspect ratio
+- **Resolution:** `1280x720` by default (override with `--resolution`), letterboxed to preserve the source image's aspect ratio (override with `--fit`)
 - **Frame rate:** `1` fps by default (override with `--fps`)
 - **Video codec:** H.264 (`libx264`, `yuv420p`)
 - **Audio codec:** AAC, 320 kbps, 48 kHz stereo
